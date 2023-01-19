@@ -224,7 +224,7 @@ ipak <- function(pkg){
 }
 
 #load or install these packages:
-packages <- c("ks", "lattice", "adehabitatHR", "maptools", "foreign", "rgdal", "sp", "raster","plot3D","rasterVis", "colorRamps","rgeos")
+packages <- c("ks", "lattice", "adehabitatHR", "maptools", "foreign", "plot3D","rasterVis", "colorRamps","sf","terra")
 
 #run function to install packages - e.g., library command
 ipak(packages)
@@ -234,29 +234,29 @@ ipak(packages)
 
 First set working directory, then read in shapefiles
 ```{r, obj2}
-# reading in shapefiles (raster package)
-elc_habitat<-shapefile("Data/elc_habitat.shp")
-humanaccess<-shapefile("Data/humanacess.shp")
-mcp2<-shapefile("Data/mcp2.shp")
-wolfyht<-shapefile("Data/wolfyht.shp")
+# reading in shapefiles (terra package)
+elc_habitat<-vect("Data/elc_habitat.shp")
+humanaccess<-vect("Data/humanacess.shp")
+mcp2<-vect("Data/mcp2.shp")
+wolfyht<-vect("Data/wolfyht.shp")
 
-# make a very basic plot of shapefile after resetting graphical parameters
+# make a very basic plot of SpatVector after resetting graphical parameters
 par(mfrow= c(1,1))
 plot(elc_habitat)
 plot(wolfyht)
 
-# look at the class of the shapefile
+# look at the class of the shapefile (SpatVector)
 class(elc_habitat)
 
-# look at structure of shapefile
+# look at structure of SpatVector
 #str(elc_habitat)
 
-# look at first 20 rows of data for shapefile
-head(elc_habitat@data, n=20)
+# look at first 20 rows of data for SpatVector
+head(elc_habitat, n=20)
 
-# look at the projection of the shapefile (note the use of "@" instead of "$")
-elc_habitat@proj4string@projargs
-wolfyht@proj4string@projargs
+# look at the projection of the SpatVector 
+crs(elc_habitat,proj = TRUE)
+crs(wolfyht, proj = TRUE)
 ```
 
 Sometimes we will need to change the projection of the shapefile to another projection (package rgdal). To change the projection we need to use the approrpiate epsg (Geodetic Parameter Dataset) code that represents your new projection. 
@@ -264,29 +264,30 @@ Sometimes we will need to change the projection of the shapefile to another proj
 Find a list of these spatial reference codes here: http://spatialreference.org/ref/epsg/
 
 ```{r, obj3}
-elc_habitat <- spTransform(elc_habitat, CRS("+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0"))
+elc_habitat <- project(elc_habitat, "+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0")
 
 # check new projection in geographic coordinate system WGS84
-elc_habitat@proj4string@projargs
+crs(elc_habitat, proj = TRUE)
 
+###I'm confused about the code below -- it doesnt seem to change it from what it was previously
 # reset projection back to what is was previously
-elc_habitat <-  spTransform(elc_habitat, CRS("+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0"))
+#elc_habitat <-  spTransform(elc_habitat, CRS("+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0"))
 
 # look at the projection of the shapefile 
-elc_habitat@proj4string@projargs
+#elc_habitat@proj4string@projargs
 
 # another way to change it back to previous 
-elc_habitat <-  spTransform(elc_habitat, CRS("+proj=utm +zone=11 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"))
+#elc_habitat <-  spTransform(elc_habitat, CRS("+proj=utm +zone=11 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"))
 
 #write shapefile to files
-writeOGR(elc_habitat,"./Output","elc_habitat_NEW",driver="ESRI Shapefile", overwrite_layer=TRUE)
+writeVector(elc_habitat, here::here("Output","elc_habitat_NEW"), filetype = "ESRI Shapefile", insert = FALSE, overwrite = TRUE)
 ```
 
 ## Extents
-Spatial data objects have a spatial extent, in geographic space, that they occupy.  To look at the spatial extent of the shapefile,we use ?extent()
+Spatial data objects have a spatial extent, in geographic space, that they occupy.  To look at the spatial extent of the SpatVectore,we use ?ext()
 ```{r, extent}
-extent(elc_habitat)
-extent(wolfyht)
+ext(elc_habitat)
+ext(wolfyht)
 ```
 We will learn later how to harmonize datasets of different spatial extents. 
 
@@ -294,15 +295,15 @@ We will learn later how to harmonize datasets of different spatial extents.
 ```{r, obj4}
 par(mfrow= c(1,1)) ## reset graphical parameters
 
-# reading in raster files (raster package)
-deer_w<-raster("Data/deer_w2.tif")
-moose_w<-raster("Data/moose_w2.tif") ## missing moose
-elk_w<-raster("Data/elk_w2.tif")
-sheep_w<-raster("Data/sheep_w2.tif") ## missing sheep
-goat_w<-raster("Data/goat_w2.tif")
-wolf_w<-raster("Data/wolf_w2.tif")#
-elevation2<-raster("Data/Elevation2.tif") #resampled
-disthumanaccess2<-raster("Data/DistFromHumanAccess2.tif") #resampled
+# reading in raster files (terra package)
+deer_w<-rast("Data/deer_w2.tif")
+moose_w<-rast("Data/moose_w2.tif") ## missing moose
+elk_w<-rast("Data/elk_w2.tif")
+sheep_w<-rast("Data/sheep_w2.tif") ## missing sheep
+goat_w<-rast("Data/goat_w2.tif")
+wolf_w<-rast("Data/wolf_w2.tif")#
+elevation2<-rast("Data/Elevation2.tif") #resampled
+disthumanaccess2<-rast("Data/DistFromHumanAccess2.tif") #resampled
 
 # make a very basic plot of raster
 plot(deer_w)
@@ -313,8 +314,8 @@ class(deer_w)
 # look at basic raster summary
 deer_w
 
-# look at raster data
-deer_w@data
+# look at raster data -- not sure how to do this one
+data(deer_w)
 
 # look at structure of raster
 str(deer_w)

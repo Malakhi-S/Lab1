@@ -142,7 +142,7 @@ ipak <- function(pkg){
 }
 
 #load or install these packages:
-packages <- c("ks", "lattice", "adehabitatHR", "maptools", "foreign", "rgdal", "sp", "raster","plot3D","rasterVis", "colorRamps","rgeos")
+packages <- c("ks", "lattice", "adehabitatHR", "maptools", "foreign", "rgdal", "sp", "raster","plot3D","rasterVis", "colorRamps","rgeos","sf","terra")
 
 #run function to install packages - e.g., library command
 ipak(packages)
@@ -152,14 +152,14 @@ ipak(packages)
 
 #setwd("/Users/mark.hebblewhite/Box Sync/Teaching/UofMcourses/WILD562/Spring2019/Labs/Lab1_rintro/Lab1_data/")
 
-# reading in shapefiles (raster package)
-elc_habitat<-shapefile("Data/elc_habitat.shp")
+# reading in shapefiles (terra package)
+elc_habitat<-vect("Data/elc_habitat.shp")
 #elc_habitat<-shapefile("Data/elc_habitat.shp")
-humanaccess<-shapefile("Data/humanacess.shp")
-mcp2<-shapefile("Data/mcp2.shp")
-wolfyht<-shapefile("Data/wolfyht.shp")
+humanaccess<-vect("Data/humanacess.shp")
+mcp2<-vect("Data/mcp2.shp")
+wolfyht<-vect("Data/wolfyht.shp")
 
-# make a very basic plot of shapefile after resetting graphical parameters
+# make a very basic plot of SpatVectors after resetting graphical parameters
 par(mfrow= c(1,1))
 plot(elc_habitat)
 plot(wolfyht)
@@ -167,14 +167,14 @@ plot(mcp2, add = TRUE)
 plot(humanaccess)
 
 
-# look at the class of the shapefile
+# look at the class of the shapefile (SpatVector)
 class(elc_habitat)
 
-# look at structure of shapefile
-#str(elc_habitat)
+# look at structure of SpatVector
+str(elc_habitat)
 
-# look at first 20 rows of data for shapefile
-head(elc_habitat@data, n=20)
+# look at first 20 rows of data for SpatVector
+head(elc_habitat, n=20)
 
 # look at the projection of the shapefile (note the use of "@" instead of "$")
 elc_habitat@proj4string@projargs
