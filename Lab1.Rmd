@@ -224,7 +224,7 @@ ipak <- function(pkg){
 }
 
 #load or install these packages:
-packages <- c("ks", "lattice", "adehabitatHR", "maptools", "foreign", "plot3D","rasterVis", "colorRamps","sf","terra")
+packages <- c("ks", "lattice", "adehabitatHR", "maptools", "foreign", "plot3D","rasterVis", "colorRamps","sf","terra", "tmap")
 
 #run function to install packages - e.g., library command
 ipak(packages)
@@ -234,40 +234,67 @@ ipak(packages)
 
 First set working directory, then read in shapefiles
 ```{r, obj2}
-# reading in shapefiles (terra package)
-elc_habitat<-vect("Data/elc_habitat.shp")
-humanaccess<-vect("Data/humanacess.shp")
-mcp2<-vect("Data/mcp2.shp")
-wolfyht<-vect("Data/wolfyht.shp")
+# reading in shapefiles (terra package -- S4 Class SpatVector)
+elc_habitat_terra<-vect("Data/elc_habitat.shp")
+humanaccess_terra<-vect("Data/humanacess.shp")
+mcp2_terra<-vect("Data/mcp2.shp")
+wolfyht_terra<-vect("Data/wolfyht.shp")
+
+# reading in shapefiles (sf package -- S3 Class Sf Data Frame)
+elc_habitat_sf <- st_read("Data/elc_habitat.shp") #can also use read_sf() - the functions do the same thing except st_read prints
+
 
 # make a very basic plot of SpatVector after resetting graphical parameters
 par(mfrow= c(1,1))
-plot(elc_habitat)
-plot(wolfyht)
+plot(elc_habitat_terra)
+plot(wolfyht_terra)
 
-# look at the class of the shapefile (SpatVector)
-class(elc_habitat)
+# for plotting sf objects we can use the package tmap()
+# first set the mode to either "plot" for static map or "view" for interactive map
+tmap_mode("plot") 
+
+tm_shape(elc_habitat_sf) + tm_sf()
+
+# look at the class of the shapefile (SpatVector) vs the sf object
+class(elc_habitat_terra)
+
+class(elc_habitat_sf)
+
 
 # look at structure of SpatVector
 #str(elc_habitat)
 
 # look at first 20 rows of data for SpatVector
-head(elc_habitat, n=20)
+head(elc_habitat_terra, n=20)
+
+# look at first 20 rows of data for sf object
+head(elc_habitat_sf, n=20)
 
 # look at the projection of the SpatVector 
-crs(elc_habitat,proj = TRUE)
-crs(wolfyht, proj = TRUE)
+crs(elc_habitat_terra,proj = TRUE)
+crs(wolfyht_terra, proj = TRUE)
+
+
+# look at the projection of the sf object
+st_crs(elc_habitat_sf)
+
 ```
 
-Sometimes we will need to change the projection of the shapefile to another projection (package rgdal). To change the projection we need to use the approrpiate epsg (Geodetic Parameter Dataset) code that represents your new projection. 
+Sometimes we will need to change the projection of the shapefile to another projection (package sf or terra). To change the projection we need to use the approrpiate epsg (Geodetic Parameter Dataset) code that represents your new projection. 
 
 Find a list of these spatial reference codes here: http://spatialreference.org/ref/epsg/
 
 ```{r, obj3}
-elc_habitat <- project(elc_habitat, "+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0")
+#changing the projection for SpatVector (terra)
+elc_habitat_terra <- project(elc_habitat_terra, "+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0")
 
 # check new projection in geographic coordinate system WGS84
 crs(elc_habitat, proj = TRUE)
+
+#changing the projection for sf object
+st_transform(elc_habitat_sf, "+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0")
+
+
 
 ###I'm confused about the code below -- it doesnt seem to change it from what it was previously
 # reset projection back to what is was previously
@@ -279,12 +306,18 @@ crs(elc_habitat, proj = TRUE)
 # another way to change it back to previous 
 #elc_habitat <-  spTransform(elc_habitat, CRS("+proj=utm +zone=11 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"))
 
-#write shapefile to files
-writeVector(elc_habitat, here::here("Output","elc_habitat_NEW"), filetype = "ESRI Shapefile", insert = FALSE, overwrite = TRUE)
+#write SpatVector to files
+writeVector(elc_habitat_terra, here::here("Output","elc_habitat_NEW_terra"), filetype = "ESRI Shapefile", overwrite = TRUE)
+
+#write sf object to files
+st_write(elc_habitat_sf, here::here("Output","elc_habitat_NEW_sf"),driver = "ESRI Shapefile", delete_layer =  TRUE)
+
+#write sf same thing as st_write with different defaults
+write_sf(elc_habitat_sf, here::here("Output","elc_habitat_NEW_writesf"),driver = "ESRI Shapefile", delete_layer =  TRUE)
 ```
 
 ## Extents
-Spatial data objects have a spatial extent, in geographic space, that they occupy.  To look at the spatial extent of the SpatVectore,we use ?ext()
+Spatial data objects have a spatial extent, in geographic space, that they occupy.  To look at the spatial extent of the SpatVector,we use ?ext()
 ```{r, extent}
 ext(elc_habitat)
 ext(wolfyht)
@@ -314,17 +347,17 @@ class(deer_w)
 # look at basic raster summary
 deer_w
 
-# look at raster data -- not sure how to do this one
+# look at raster data -- not sure how to do this one with terra/sf
 data(deer_w)
 
 # look at structure of raster
 str(deer_w)
 
 # look at the projection of the raster (note the use of "@" instead of "$")
-deer_w@crs@projargs
+crs(deer_w, proj = TRUE)
 
 # look at the spatial extent of the raster
-extent(deer_w)
+ext(deer_w)
 
 # look at the resolution of the raster
 res(deer_w)
@@ -332,20 +365,20 @@ res(deer_w)
 
 And if we need to change the projection of the raster to another projection (package rgdal) - note for the Tutorial I've masked these out # because they take a LONG time. 
 ```{r, obj5}
-#deer_w2 <- projectRaster(deer_w, crs="+init=epsg:4326")
+#deer_w2 <- terra::project(deer_w, crs="+init=epsg:4326")
 
 ## or try this the same way we did above
 
-#deer_w2 <- projectRaster(deer_w, crs="+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0")
+#deer_w2 <- terra::project(deer_w, crs="+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0")
 
 #check projection of the raster
-deer_w@crs@projargs
+crs(deer_w, proj = TRUE)
 
 #change it back to what it was using another raster layers projection
 #deer_w <- projectRaster(deer_w2, wolf_w)
 
 #check projection of the raster
-deer_w@crs@projargs
+crs(deer_w, proj = TRUE)
 ```
 
 ## Creating a Raster Stack
@@ -353,7 +386,7 @@ deer_w@crs@projargs
 One of the GREAT things about doing GIS in R is the ability to create a consistent raster stack of rasters of the same projection, extent, etc.  LEts create a raster stack!
 
 ```{r, obj6}
-all.rasters<-stack(deer_w, moose_w, elk_w, sheep_w, goat_w, elevation2, disthumanaccess2)
+all.rasters<-c(deer_w, moose_w, elk_w, sheep_w, goat_w, elevation2, disthumanaccess2)
 
 plot(all.rasters)
 
@@ -366,7 +399,7 @@ We can also sometimes need to export raster files to other formats such as a Geo
 ```{r, obj7}
 #learn more about 
 #?writeRaster()
-writeRaster(deer_w, "Output/new_deer.tiff", "GTiff", overwrite=TRUE)
+writeRaster(deer_w, "Output/new_deer.tiff", filetype = "GTiff", overwrite=TRUE)
 ```
 
 
