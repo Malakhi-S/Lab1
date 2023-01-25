@@ -232,7 +232,7 @@ ipak(packages)
 
 ## Working Directly with Shapefiles in R 
 
-First set working directory, then read in shapefiles
+Read in shapefiles with options to use package sf or terr
 ```{r, obj2}
 # reading in shapefiles (terra package -- S4 Class SpatVector)
 elc_habitat_terra<-vect("Data/elc_habitat.shp")
@@ -240,8 +240,12 @@ humanaccess_terra<-vect("Data/humanacess.shp")
 mcp2_terra<-vect("Data/mcp2.shp")
 wolfyht_terra<-vect("Data/wolfyht.shp")
 
-# reading in shapefiles (sf package -- S3 Class Sf Data Frame)
-elc_habitat_sf <- st_read("Data/elc_habitat.shp") #can also use read_sf() - the functions do the same thing except st_read prints
+# reading in shapefiles (sf package -- S3 Class Sf Data Frame) 
+elc_habitat_sf <- st_read("Data/elc_habitat.shp")
+humanaccess_sf<-st_read("Data/humanacess.shp") 
+mcp2_sf<-st_read("Data/mcp2.shp")
+wolfyht_sf<-st_read("Data/wolfyht.shp")
+#can also use read_sf() - the functions do the same thing except st_read prints
 
 
 # make a very basic plot of SpatVector after resetting graphical parameters
@@ -289,7 +293,7 @@ Find a list of these spatial reference codes here: http://spatialreference.org/r
 elc_habitat_terra <- project(elc_habitat_terra, "+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0")
 
 # check new projection in geographic coordinate system WGS84
-crs(elc_habitat, proj = TRUE)
+crs(elc_habitat_terra, proj = TRUE)
 
 #changing the projection for sf object
 st_transform(elc_habitat_sf, "+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0")
@@ -319,8 +323,11 @@ write_sf(elc_habitat_sf, here::here("Output","elc_habitat_NEW_writesf"),driver =
 ## Extents
 Spatial data objects have a spatial extent, in geographic space, that they occupy.  To look at the spatial extent of the SpatVector,we use ?ext()
 ```{r, extent}
-ext(elc_habitat)
-ext(wolfyht)
+ext(elc_habitat_terra)
+ext(wolfyht_terra)
+
+st_bbox(elc_habitat_sf)
+st_bbox(wolfyht_sf)
 ```
 We will learn later how to harmonize datasets of different spatial extents. 
 
@@ -347,8 +354,8 @@ class(deer_w)
 # look at basic raster summary
 deer_w
 
-# look at raster data -- not sure how to do this one with terra/sf
-data(deer_w)
+# look at raster data -- not sure how to do this one with terra
+#view(deer_w)
 
 # look at structure of raster
 str(deer_w)
@@ -397,8 +404,6 @@ class(all.rasters)
 We can also sometimes need to export raster files to other formats such as a GeoTiff. 
 
 ```{r, obj7}
-#learn more about 
-#?writeRaster()
 writeRaster(deer_w, "Output/new_deer.tiff", filetype = "GTiff", overwrite=TRUE)
 ```
 
@@ -419,17 +424,17 @@ install.packages("remotes")
 library(remotes)
 remotes::install_github("r-spatial/mapview")
 library(mapview)
-mapView(wolfyht, layer.name = , zcol="NAME", native.crs = FALSE, legend = TRUE, cex=5, lwd=2, map.type = "Esri.DeLorme") + mcp2
+mapView(wolfyht_terra, layer.name = , zcol="NAME", native.crs = FALSE, legend = TRUE, cex=5, lwd=2, map.type = "Esri.DeLorme") + mcp2_terra
 ```
 
 ```{r mapview2, }  
-mapView(wolfyht, zcol="NAME", legend = TRUE, cex=5, lwd=2, map.type = "Esri.WorldImagery") + mcp2
+mapView(wolfyht, zcol="NAME", legend = TRUE, cex=5, lwd=2, map.type = "Esri.WorldImagery") + mcp2_terra
 
 ## Open Topo Map
-mapView(wolfyht, zcol="NAME", legend = TRUE, cex=5, lwd=2, map.type = "OpenTopoMap") + mcp2
+mapView(wolfyht, zcol="NAME", legend = TRUE, cex=5, lwd=2, map.type = "OpenTopoMap") + mcp2_terra
 
 ## Esri World Topo Map
-mapView(wolfyht, zcol="NAME", legend = TRUE, cex=5, lwd=2, map.type = "Esri.WorldTopoMap") + mcp2
+mapView(wolfyht, zcol="NAME", legend = TRUE, cex=5, lwd=2, map.type = "Esri.WorldTopoMap") + mcp2_terra
 ```
 
 
