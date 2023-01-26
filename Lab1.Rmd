@@ -1,7 +1,7 @@
 ---
 title: "Lab 1 2023"
 author: "Mark Hebblewhite"
-date: "1/18/2023"
+date: "1/24/2023 test2"
 output:
   html_document:
     number_sections: yes
@@ -213,7 +213,41 @@ But, how did we build our dataset of things like distance to cover, distance to 
 
 # Objective 2 - exploring SPATIAL data in R. 
 
-This semester we will use this nifty little wrapper package Dan Eacker adapted from here: https://gist.github.com/stevenworthington/3178163
+Over the last decade, R has replaced the functionality of Geographic Information Systems (GIS) for many if not almost all GIS-type analyses we would want to do in R.  The initial and most popular R packages developed to help manage and analyze spatial data were initially based on the R package `sp` - by Roger Bivand, author of the associated book:
+
++ Bivand, R. S., et al. (2015). Applied spatial data analysis with R. New York, Springer.
+	
+and the `rgeos` package for interfacing with spatial geometry in r:
+
++ Bivand, R. S., et al. (2017). rgeos: interface to geometry engine - open source ('GEOS'), R package 0.3-26.
+
+These two packages have 100's of subsequent dependencies and links to other packages, analyses and formed the core of spatial analyses in R for a decade. We will start with the sp package today in lab for importing, managing and learning about spatial data. 
+
+However, in the last 3 years, a next generation set of R packages, `sf`, `terra` and others have replaced and/or are about to replace the original `sp` packages.  In future labs, we will learn about the package `sf` in particular, but I will explore some learning materials today in lab to highlight the similarities and differences between the `sp` and `sf` packages. 
+
+*Spatial R resources*
+
+Spatial R - Moving from SP to SF
+https://www.nickbearman.me.uk/2019/04/spatial-r-moving-from-sp-to-sf/
+
+Spatial R - Time to move from sp to sf
+https://www.geospatialtrainingsolutions.co.uk/spatial-r-time-to-move-from-sp-to-sf/
+
+We are R-Ladies - Spatial R packages sf vs sp
+https://twitter.com/WeAreRLadies/status/1469287613060292613
+
+From Nick Bearmans website, we learn:
+
+`sp` and `sf` work in fundamentally different ways, specifically revolving around how they store spatial data within R. sp uses something called S4 classes, where the different elements of spatial data (coordinates/geometry, attribute table, coordinate system, etc.) are split up into different ‘slots’ and accessed using the @ symbol. sf uses S3 classes and stores spatial data all within a standard data frame, with some extra header information and a geometry column.
+
+Nick Bearman's website especially is useful and compares and contrasts the `sf` and `sp` packages here using a table from the WeareRLadies Twitter Feed (an excellent source): 
+![WeAreRLadiesTable](Images/sfvsspRpackages.jpg)
+
+We will read through some of these materials in class, but, as Nick Bearmans says, we will start using `sf`.
+
+First, however, we will load a variety of libraries today using an R function. 
+This semester we will use this nifty little wrapper function Dan Eacker adapted from here: https://gist.github.com/stevenworthington/3178163
+
 ## Define function to install and load required packages
 ```{r, ipakfunction}
 ipak <- function(pkg){
