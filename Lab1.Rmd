@@ -2,12 +2,7 @@
 title: "Lab 1 2023"
 author: "Mark Hebblewhite"
 date: "1/24/2023 test2"
-output:
-  html_document:
-    number_sections: yes
-    theme: simplex
-    toc: yes
-    toc_float: yes
+output: github_document
 ---
 
 ```{r setup , include=FALSE}
@@ -345,7 +340,7 @@ st_transform(elc_habitat_sf, "+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +
 #elc_habitat <-  spTransform(elc_habitat, CRS("+proj=utm +zone=11 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"))
 
 #write SpatVector to files
-writeVector(elc_habitat_terra, here::here("Output","elc_habitat_NEW_terra"), filetype = "ESRI Shapefile", overwrite = TRUE)
+writeVector(elc_habitat_terra, here::here("Output","elc_habitat_NEW_terra"), filetype = "ESRI Shapefile",insert = FALSE, overwrite = TRUE)
 
 #write sf object to files
 st_write(elc_habitat_sf, here::here("Output","elc_habitat_NEW_sf"),driver = "ESRI Shapefile", delete_layer =  TRUE)
@@ -453,7 +448,7 @@ http://leaflet-extras.github.io/leaflet-providers/preview/
 **Note, I had unexplained errors with the latest version of Mapview that were creating all sorts of problems both viewing the wolf telemetry points, and, rendering the .html through R markdown.  I found the solution here :**
 https://github.com/r-spatial/mapview/issues/312
 
-```{r mapview, }
+```{r mapview, eval=FALSE}
 install.packages("remotes")
 library(remotes)
 remotes::install_github("r-spatial/mapview")
@@ -461,11 +456,11 @@ library(mapview)
 mapView(wolfyht_terra, layer.name = , zcol="NAME", native.crs = FALSE, legend = TRUE, cex=5, lwd=2, map.type = "Esri.DeLorme") + mcp2_terra
 ```
 
-```{r mapview2, }  
-mapView(wolfyht, zcol="NAME", legend = TRUE, cex=5, lwd=2, map.type = "Esri.WorldImagery") + mcp2_terra
+```{r mapview2, eval = FALSE }  
+mapView(wolfyht_terra, zcol="NAME", legend = TRUE, cex=5, lwd=2, map.type = "Esri.WorldImagery") + mcp2_terra
 
 ## Open Topo Map
-mapView(wolfyht, zcol="NAME", legend = TRUE, cex=5, lwd=2, map.type = "OpenTopoMap") + mcp2_terra
+mapView(wolfyht_terra, zcol="NAME", legend = TRUE, cex=5, lwd=2, map.type = "OpenTopoMap") + mcp2_terra
 
 ## Esri World Topo Map
 mapView(wolfyht, zcol="NAME", legend = TRUE, cex=5, lwd=2, map.type = "Esri.WorldTopoMap") + mcp2_terra
