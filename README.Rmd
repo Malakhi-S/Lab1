@@ -467,3 +467,7 @@ mapView(wolfyht, zcol="NAME", legend = TRUE, cex=5, lwd=2, map.type = "Esri.Worl
 ```
 
 
+```{r, }
+knitr::purl(input = "README.Rmd", output = "lab1.R", documentation = 1)
+
+```
